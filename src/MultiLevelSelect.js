@@ -8,17 +8,17 @@ export class MultiLevelSelect {
    * isBGFixing 弹窗背景是否固定
    * 
   */
- 
+
   constructor({ data, containerId, onSelectComplete, options = {} }) {
-    
+
     if (!Array.isArray(data) || data.length === 0) {
       throw new Error("The 'data' parameter must be a non-empty array.");
-    }
-    
+    }  
+
     if (containerId && typeof containerId !== 'string' || !document.getElementById(containerId)) {
       throw new Error("The 'containerId' parameter must be a valid string ID of an existing DOM element.");
     }
-    
+
     if (typeof onSelectComplete !== 'function') {
       throw new Error("The 'onSelectComplete' parameter must be a function.");
     }
@@ -47,12 +47,22 @@ export class MultiLevelSelect {
   }
   openPopup(jobId) {
     this.searchInput.value = '';
-    
-    if(jobId){
+
+    if (jobId) {
+      // 如果明确提供了jobId，则使用它
       this.updateCompleteData(jobId);
-    }else {
-      this.resetData()
+    } else if(this.checkedList && this.checkedList.length > 0) {
+      // 如果没有提供jobId但有已选值，则使用最后一个选中的值来恢复状态
+      const lastSelected = this.checkedList[this.checkedList.length - 1];
+      if(lastSelected && lastSelected.value) {
+        this.updateCompleteData(lastSelected.value);
+      } else {
+        this.resetData();
+      }
+    } else {
+      this.resetData();
     }
+    
     if (this.isBGFixing) {
       // 固定背景
       document.body.style.overflow = 'hidden';
@@ -60,7 +70,7 @@ export class MultiLevelSelect {
     this.setStyle(this.maskBox, {
       display: 'block',
     })
-    console.log('multilevelSelect', this.container.value, this.container,jobId);
+    console.log('multilevelSelect', this.container.value, this.container, jobId);
   }
   // 设置样式的函数
   setStyle(ele, styleObj) {
@@ -69,7 +79,7 @@ export class MultiLevelSelect {
     }
   }
 
-  createSelectPopup({ title = '默认标题',isBGFixing}) {
+  createSelectPopup({ title = '默认标题', isBGFixing }) {
     // 遮罩
     this.maskBox = document.createElement('div');
     this.setStyle(this.maskBox, {
@@ -83,9 +93,9 @@ export class MultiLevelSelect {
       zIndex: '9999'
     });
     // 将遮罩放在body中显示
-    if(this.container){
+    if (this.container) {
       this.container.appendChild(this.maskBox);
-    }else {
+    } else {
       document.body.appendChild(this.maskBox);
     }
 
@@ -193,7 +203,8 @@ export class MultiLevelSelect {
       lineHeight: '14vw',
       borderBottom: '1px solid #f7f7f7',
       padding: '0 3.2vw',
-      fontSize: '3.733vw'
+      fontSize: '3.733vw',
+      listStyle: 'none'
     })
     this.MultiLevelBox.appendChild(this.categorySelectBox);
 
@@ -203,13 +214,14 @@ export class MultiLevelSelect {
       flex: '1',
       padding: '3.2vw',
       overflow: 'auto',
-      fontSize: '3.733vw'
+      fontSize: '3.733vw',
+      listStyle: 'none'
     })
     this.MultiLevelBox.appendChild(this.contentSelectBox);
   }
   drawData() {
     // this.data
-    this.depth = this.getDepth(this.data[0])
+    this.depth = this.getDepth(this.data[0]);
     console.log('层级深度:', this.depth);
     this.createCategorySelectElement({ depth: this.depth });
 
@@ -302,7 +314,6 @@ export class MultiLevelSelect {
       currentlyChecked.classList.remove('ContentChecked');
     }
 
-
     // 给当前点击的元素添加 ContentChecked 类
     target.classList.add('ContentChecked');
 
@@ -310,7 +321,7 @@ export class MultiLevelSelect {
     const selectedId = target.getAttribute('data-id'); // 获取数据属性
     console.log(`Content item clicked: ${selectedId}`, this.checkedList);
 
-    let arrData;
+    let arrData; // 获取数据原数组
     if (this.filteredData) {
       arrData = this.filteredData;
       this.filteredData = '';
@@ -320,30 +331,34 @@ export class MultiLevelSelect {
           this.checkedList[currentIndex] = this.data[0];
         } else {
           this.checkedList[currentIndex] = this.checkedList?.[currentIndex - 1]?.children?.[0];
-
         }
       }
       arrData = currentIndex === 0 ? this.data : this.checkedList?.[currentIndex - 1]?.children;
     }
 
-
     this.checkedList[currentIndex] = arrData.find(obj => obj.value === selectedId);
-    console.log(this.checkedList);
 
-    if (currentIndex === this.depth - 1) {
-      this.closePopup();
+    // 清除当前索引之后的所有已选择数据，防止数据残留
+    this.checkedList = this.checkedList.slice(0, currentIndex + 1);
+
+    // 检查当前选中项是否有子节点，如果有则继续，如果没有则结束选择
+    const nextChildren = this.checkedList[currentIndex]?.children;
+    if (nextChildren && Array.isArray(nextChildren) && nextChildren.length > 0) {
+      // 有子节点，继续下一级选择
+      setTimeout(() => {
+        this.checkedList[currentIndex + 1] = nextChildren[0];
+        this.drawContentSelectData(nextChildren);
+        this.updateCategorySelection(currentIndex + 1);
+      }, 250);
+    } else {
+      // 没有子节点，结束选择
       if (this.onSelectComplete) {
         this.onSelectComplete(this.checkedList);
       }
+      this.closePopup();
       return this.checkedList;
     }
-    setTimeout(() => {
-      this.checkedList[currentIndex + 1] = this.checkedList[currentIndex].children[0];
-      this.drawContentSelectData(this.checkedList[currentIndex].children);
 
-      this.updateCategorySelection(currentIndex + 1);
-
-    }, 250);
   }
   // search blur bind
   // 输入事件处理函数
@@ -398,7 +413,7 @@ export class MultiLevelSelect {
     this.contentSelectBox.innerHTML = '';
   }
 
-  updateCategorySelection(targetIndexId=0) {
+  updateCategorySelection(targetIndexId = 0) {
     // 使用示例
     // updateCategorySelection(2); // 将 index-id 为 2 的元素标记为选中
 
@@ -423,7 +438,6 @@ export class MultiLevelSelect {
     this.clearContentSelectBox();
 
     arrData.map((item, index) => {
-      console.log('item', item, index)
       const li = document.createElement('li');
       li.innerText = item.label;
       li.setAttribute('data-id', item.value);
@@ -437,50 +451,86 @@ export class MultiLevelSelect {
       this.contentSelectBox.appendChild(li);
     })
   }
-  handleCategoryChange() {
-    const selectedCategory = this.categorySelect.value;
-    this.updateSubcategories(selectedCategory);
-    this.professionSelect.innerHTML = '<option value="">请选择职业</option>'; // 清空职业
-  }
+  // handleCategoryChange() {
+  //   const selectedCategory = this.categorySelect.value;
+  //   this.updateSubcategories(selectedCategory);
+  //   this.professionSelect.innerHTML = '<option value="">请选择职业</option>'; // 清空职业
+  // }
 
-  updateSubcategories(categoryValue) {
-    this.subcategorySelect.innerHTML = '<option value="">请选择子类</option>'; // 清空子类
-    this.professionSelect.innerHTML = '<option value="">请选择职业</option>'; // 清空职业
+  // updateSubcategories(categoryValue) {
+  //   this.subcategorySelect.innerHTML = '<option value="">请选择子类</option>'; // 清空子类
+  //   this.professionSelect.innerHTML = '<option value="">请选择职业</option>'; // 清空职业
 
-    const children = this.data.find(cat => cat.value === categoryValue)?.children || [];
-    children.forEach(sub => {
-      const option = document.createElement("option");
-      option.value = sub.value;
-      option.textContent = sub.label;
-      this.subcategorySelect.appendChild(option);
-    });
-  }
+  //   const children = this.data.find(cat => cat.value === categoryValue)?.children || [];
+  //   children.forEach(sub => {
+  //     const option = document.createElement("option");
+  //     option.value = sub.value;
+  //     option.textContent = sub.label;
+  //     this.subcategorySelect.appendChild(option);
+  //   });
+  // }
   // 更新补全数据
   updateCompleteData(jobId) {
+    // 临时保存当前的checkedList，以便在找不到路径时回退
+    const tempCheckedList = [...this.checkedList];
+    
     this.checkedList = [];
-    this.findParents(jobId,this.data,this.depth);
-    this.drawContentSelectData(this.checkedList?.[this.checkedList.length - 2]?.children || []);
-  }
-  findParents(jobId, data=this.data,level) {
-    for (const item of data) {
-      if (item.children) {
-        const found = this.findParents(jobId, item.children); // 
-        if (found) {
-          this.checkedList.unshift(item);
-          if (this.checkedList.length > level + 1) { // 限制长度
-            this.checkedList.pop(); // 去掉多余的层级
+    if(this.findParents(jobId, this.data)) {
+      // 找到了路径，更新选择状态
+      if(this.checkedList.length > 0) {
+        // 设置当前类别为最后一个选中项的层级
+        this.currentCategoryChecked = this.checkedList.length - 1;
+        
+        // 更新分类选择元素的显示
+        this.updateCategorySelection(this.currentCategoryChecked);
+        
+        // 显示当前层级的兄弟节点（同级节点）
+        let siblingsToShow = [];
+        if(this.checkedList.length > 1) {
+          // 如果不是顶层，则显示父节点下的同级选项
+          const parentItem = this.checkedList[this.checkedList.length - 2];
+          siblingsToShow = parentItem?.children || [];
+        } else {
+          // 如果是顶层，则显示根级选项
+          siblingsToShow = this.data;
         }
-          return true; // 返回找到的状态
-        }
+        
+        this.drawContentSelectData(siblingsToShow);
+        
+        // 确保选中的项被高亮显示
+        setTimeout(() => {
+          const selectedElement = this.contentSelectBox.querySelector(`[data-id="${jobId}"]`);
+          if (selectedElement) {
+            selectedElement.classList.add('ContentChecked');
+            
+            // 滚动到选中项的位置
+            selectedElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 100);
       }
-      // 检查当前项
+    } else {
+      // 如果没找到路径，恢复原来的checkedList
+      this.checkedList = tempCheckedList;
+      this.drawContentSelectData(this.data);
+    }
+  }
+  
+  findParents(jobId, data = this.data) {
+    for (const item of data) {
       if (item.value === jobId) {
         this.checkedList.unshift(item); // 如果找到 jobId，则记录
         return true; // 返回找到的状态
       }
+      
+      if (item.children) {
+        const found = this.findParents(jobId, item.children); 
+        if (found) {
+          this.checkedList.unshift(item);
+          return true;
+        }
+      }
     }
-    console.log('findParents',this.checkedList)
-
+    
     return false; // 没有找到
   }
   //重置数据/渲染默认数据
@@ -507,6 +557,6 @@ export class MultiLevelSelect {
         document.body.style.overflow = '';
       }
     }, time);
-    
+
   }
 }

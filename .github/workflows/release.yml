@@ -1,0 +1,46 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm to support trusted publishing
+        run: |
+          npm install -g npm@11.5.1
+          npm --version
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build project
+        run: npm run build
+        
+      - name: Publish to npm using Trusted Publishing
+        run: npm publish --access public
+        # 但需要在 npmjs.com 上配置 Trusted Publishers
+        
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: dist/*
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false

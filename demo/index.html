@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MultiLevelSelect Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #0069d9;
+        }
+        
+        #container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>MultiLevelSelect.js Demo</h1>
+    
+    <div class="form-group">
+        <label for="input">Selected Job:</label>
+        <input type="text" id="input" placeholder="Click here to select a job" readonly>
+    </div>
+    
+    <div id="container"></div>
+
+    <script type="module">
+        import { MultiLevelSelect } from '/src/MultiLevelSelect.js';
+        
+        const data = [
+            {
+                id: "id1",
+                value: "value1",
+                label: "一级选项",
+                children: [
+                    {
+                        id: "id1-1",
+                        value: "value1-1",
+                        label: "二级选项",
+                        children: [
+                            {
+                                id: "id1-1-1",
+                                value: "value1-1-1",
+                                label: "三级选项"
+                            }
+                        ]
+                    },
+                    {
+                        id: "id1-2",
+                        value: "value1-2",
+                        label: "另一个二级选项",
+                        children: [
+                            {
+                                id: "id1-2-1",
+                                value: "value1-2-1",
+                                label: "另一个三级选项"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "id2",
+                value: "value2",
+                label: "1级选项",
+                children: [
+                    {
+                        id: "id2-1",
+                        value: "value2-1",
+                        label: "二级选项"
+                    }
+                ]
+            }
+        ];
+        
+        // 实例化插件
+        const selector = new MultiLevelSelect({
+            data: data,
+            containerId: 'container',
+            onSelectComplete: (selectedItems) => {
+                console.log('选择完成:', selectedItems);
+                if (selectedItems && selectedItems.length > 0) {
+                    const lastSelectedItem = selectedItems[selectedItems.length - 1];
+                    document.getElementById('input').value = lastSelectedItem.label;
+                    document.getElementById('input').setAttribute('jobid', lastSelectedItem.value);
+                }
+            },
+            options: {
+                title: '选择项目',
+                isBGFixing: true
+            }
+        });
+        
+        document.getElementById('input').addEventListener('click', function () {
+            console.log('点击了输入框');
+            const jobId = this.getAttribute('jobid');
+            selector.openPopup(jobId);
+        });
+        
+    </script>
+</body>
+
+</html>
