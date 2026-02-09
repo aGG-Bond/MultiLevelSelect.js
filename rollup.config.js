@@ -1,5 +1,6 @@
 import terser from '@rollup/plugin-terser';
 import replace from '@rollup/plugin-replace';
+import typescript from 'rollup-plugin-typescript2';
 import { readFileSync } from 'fs';
 
 const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'));
@@ -16,24 +17,12 @@ const banner = `/*!
 export default [
   // 未压缩的版本
   {
-    input: 'src/MultiLevelSelect.js',
-    output: [
-      {
-        file: 'dist/MultiLevelSelect.cjs.js',
-        format: 'cjs',
-        sourcemap: true
-      },
-      {
-        file: 'dist/MultiLevelSelect.esm.js',
-        format: 'es',
-        sourcemap: true
-      },
-      {
-        file: 'dist/MultiLevelSelect.iife.js',
-        format: 'iife',
-        name: 'MultiLevelSelect',
-        sourcemap: true
-      }
+    input: 'src/MultiLevelSelect.ts',
+    plugins: [
+      typescript({
+        tsconfig: './tsconfig.json',
+        useTsconfigDeclarationDir: true
+      })
     ],
     output: [
       {
@@ -59,26 +48,12 @@ export default [
   },
   // 压缩的版本
   {
-    input: 'src/MultiLevelSelect.js',
-    output: [
-      {
-        file: 'dist/MultiLevelSelect.cjs.min.js',
-        format: 'cjs',
-        sourcemap: true
-      },
-      {
-        file: 'dist/MultiLevelSelect.esm.min.js',
-        format: 'es',
-        sourcemap: true
-      },
-      {
-        file: 'dist/MultiLevelSelect.iife.min.js',
-        format: 'iife',
-        name: 'MultiLevelSelect',
-        sourcemap: true
-      }
-    ],
+    input: 'src/MultiLevelSelect.ts',
     plugins: [
+      typescript({
+        tsconfig: './tsconfig.json',
+        useTsconfigDeclarationDir: true
+      }),
       replace({
         preventAssignment: true,
         values: {
@@ -99,6 +74,24 @@ export default [
           preamble: banner
         }
       })
+    ],
+    output: [
+      {
+        file: 'dist/MultiLevelSelect.cjs.min.js',
+        format: 'cjs',
+        sourcemap: true
+      },
+      {
+        file: 'dist/MultiLevelSelect.esm.min.js',
+        format: 'es',
+        sourcemap: true
+      },
+      {
+        file: 'dist/MultiLevelSelect.iife.min.js',
+        format: 'iife',
+        name: 'MultiLevelSelect',
+        sourcemap: true
+      }
     ]
   }
 ];

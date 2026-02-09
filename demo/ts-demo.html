@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeScript版本演示 - MultiLevelSelect</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        
+        .demo-section h2 {
+            margin-top: 0;
+            color: #1890ff;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #1890ff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-success {
+            background: #52c41a;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #73d13d;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #1890ff;
+        }
+        
+        .result h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .result pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .feature-card h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        .feature-card ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .feature-card li {
+            margin: 5px 0;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔷 TypeScript版本演示</h1>
+        
+        <div class="demo-section">
+            <h2>✨ TypeScript特性展示</h2>
+            <div class="feature-list">
+                <div class="feature-card">
+                    <h4>🔷 类型安全</h4>
+                    <ul>
+                        <li>完整的类型定义</li>
+                        <li>编译时错误检查</li>
+                        <li>智能代码提示</li>
+                        <li>重构支持</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🛠️ 开发体验</h4>
+                    <ul>
+                        <li>自动补全</li>
+                        <li>参数提示</li>
+                        <li>跳转定义</li>
+                        <li>查找引用</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>📦 构建优化</h4>
+                    <ul>
+                        <li>TypeScript编译</li>
+                        <li>类型声明生成</li>
+                        <li>源码映射支持</li>
+                        <li>Tree Shaking优化</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🛡️ 代码质量</h4>
+                    <ul>
+                        <li>严格的类型检查</li>
+                        <li>接口契约保证</li>
+                        <li>减少运行时错误</li>
+                        <li>更好的文档化</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎮 交互演示</h2>
+            <div class="controls">
+                <button class="btn-primary" onclick="initDemo()">初始化组件</button>
+                <button class="btn-secondary" onclick="openSelector()">打开选择器</button>
+                <button class="btn-success" onclick="showCurrentSelection()">查看选择</button>
+                <button class="btn-secondary" onclick="resetDemo()">重置</button>
+            </div>
+            
+            <div id="result" class="result" style="display: none;">
+                <h3>选择结果</h3>
+                <pre id="result-content"></pre>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📝 使用示例</h2>
+            <pre><code>// TypeScript使用方式
+import MultiLevelSelect, { SelectOption, Config } from './MultiLevelSelect';
+
+// 定义数据类型
+const data: SelectOption[] = [
+  {
+    id: '1',
+    name: '前端开发',
+    children: [
+      {
+        id: '1-1',
+        name: 'JavaScript',
+        children: [
+          { id: '1-1-1', name: 'Vue.js' },
+          { id: '1-1-2', name: 'React' },
+          { id: '1-1-3', name: 'Angular' }
+        ]
+      }
+    ]
+  }
+];
+
+// 配置类型安全
+const config: Config = {
+  title: '技术栈选择',
+  enableSearch: true,
+  onSelectComplete: (selectedItems) => {
+    console.log('选择完成:', selectedItems);
+  }
+};
+
+// 创建实例（类型安全）
+const selector = new MultiLevelSelect(data, config);
+selector.openPopup();</code></pre>
+        </div>
+    </div>
+
+    <!-- 注意：实际使用时需要先构建TypeScript版本 -->
+    <script>
+        // 这里应该是构建后的JavaScript文件
+        // 由于演示目的，使用模拟数据
+        
+        let selectorInstance = null;
+        
+        // 模拟数据
+        const mockData = [
+            {
+                id: 'frontend',
+                name: '前端开发',
+                children: [
+                    {
+                        id: 'js-framework',
+                        name: 'JavaScript框架',
+                        children: [
+                            { id: 'vue', name: 'Vue.js' },
+                            { id: 'react', name: 'React' },
+                            { id: 'angular', name: 'Angular' }
+                        ]
+                    },
+                    {
+                        id: 'css-tools',
+                        name: 'CSS工具',
+                        children: [
+                            { id: 'sass', name: 'Sass' },
+                            { id: 'less', name: 'Less' },
+                            { id: 'tailwind', name: 'Tailwind CSS' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'backend',
+                name: '后端开发',
+                children: [
+                    {
+                        id: 'nodejs',
+                        name: 'Node.js',
+                        children: [
+                            { id: 'express', name: 'Express' },
+                            { id: 'koa', name: 'Koa' },
+                            { id: 'fastify', name: 'Fastify' }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        function initDemo() {
+            showMessage('✅ TypeScript版本已准备就绪！类型定义和智能提示已启用。');
+        }
+
+        function openSelector() {
+            showMessage('🎮 点击了"打开选择器"。\n\n在真实环境中，这将打开带有完整类型支持的多级选择弹窗。');
+        }
+
+        function showCurrentSelection() {
+            const result = {
+                selectedItems: [
+                    { id: 'frontend', name: '前端开发' },
+                    { id: 'js-framework', name: 'JavaScript框架' },
+                    { id: 'vue', name: 'Vue.js' }
+                ],
+                timestamp: new Date().toISOString(),
+                source: 'TypeScript Demo'
+            };
+            
+            document.getElementById('result-content').textContent = JSON.stringify(result, null, 2);
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function resetDemo() {
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('result-content').textContent = '';
+            showMessage('🔄 演示已重置');
+        }
+
+        function showMessage(message) {
+            const msgEl = document.createElement('div');
+            msgEl.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #52c41a;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                max-width: 300px;
+                animation: slideIn 0.3s ease;
+            `;
+            msgEl.innerHTML = `<pre style="margin:0;font-size:12px;">${message}</pre>`;
+            
+            document.body.appendChild(msgEl);
+            
+            setTimeout(() => {
+                msgEl.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (msgEl.parentNode) {
+                        document.body.removeChild(msgEl);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 页面加载完成提示
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                showMessage('🔷 欢迎体验TypeScript版本！\n\n享受类型安全和开发便利性');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重构版订单详情组件演示</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --styleColor: #1890ff;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        
+        .section h3 {
+            margin-top: 0;
+            color: var(--styleColor);
+            border-bottom: 2px solid var(--styleColor);
+            padding-bottom: 10px;
+        }
+        
+        .controls {
+            background: #f0f2f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: var(--styleColor);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.modal-show {
+            opacity: 1;
+        }
+        
+        .modal-container {
+            background: white;
+            border-radius: 8px;
+            min-width: 300px;
+            max-width: 500px;
+            width: 80%;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.modal-show .modal-container {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: var(--styleColor);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        /* 文件上传样式 */
+        .uploadBox {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .uploadBox input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .previewImg {
+            max-width: 100px;
+            max-height: 100px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        
+        /* 导航相关样式 */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 重构版订单详情组件演示</h1>
+        
+        <div class="controls">
+            <h3>🔧 控制面板</h3>
+            <button class="btn btn-primary" onclick="initDemo()">初始化演示</button>
+            <button class="btn btn-secondary" onclick="showProductInfo()">显示产品信息</button>
+            <button class="btn btn-secondary" onclick="showNavigation()">显示导航</button>
+            <button class="btn btn-success" onclick="showModalDemo()">模态框演示</button>
+            <button class="btn btn-secondary" onclick="showFileUpload()">文件上传演示</button>
+        </div>
+
+        <div id="demo-container">
+            <div class="section product-section">
+                <h3>📦 产品信息区域</h3>
+                <p>这里是产品信息展示区域，初始化后会显示具体的产品数据。</p>
+            </div>
+            
+            <div class="section detail-section">
+                <h3>📋 详细信息区域</h3>
+                <p>这里是详细信息展示区域，包括投保人信息等内容。</p>
+            </div>
+            
+            <div class="section plan-section">
+                <h3>💰 保障计划区域</h3>
+                <p>这里是保障计划展示区域，显示不同的保险计划选项。</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入重构后的模块
+        import { OrderDetailManager, InfoDisplay, Navigation, Modal } from '../src/orderDetailModule.js';
+        import { fileToBase64, createFileUploadInput } from '../src/utils/index.js';
+
+        let manager;
+
+        // 演示数据
+        const demoData = {
+            product: {
+                productName: '终身寿险产品',
+                productCode: 'LIFE2024001',
+                price: '¥2,999/年',
+                coverage: '最高100万',
+                period: '终身保障'
+            },
+            applicant: {
+                name: '张三',
+                idCard: '110101199001011234',
+                phone: '138****8888',
+                email: 'zhangsan@example.com',
+                address: '北京市朝阳区xxx街道'
+            },
+            plans: [
+                {
+                    name: '基础保障计划',
+                    amount: '¥1,999/年',
+                    desc: '包含身故保障50万元，意外伤害保障30万元，住院医疗保障10万元'
+                },
+                {
+                    name: '全面保障计划',
+                    amount: '¥2,999/年',
+                    desc: '包含身故保障100万元，意外伤害保障50万元，住院医疗保障30万元，重大疾病保障50万元'
+                },
+                {
+                    name: '尊享保障计划',
+                    amount: '¥4,999/年',
+                    desc: '包含身故保障200万元，意外伤害保障100万元，住院医疗保障50万元，重大疾病保障100万元，门诊医疗保障20万元'
+                }
+            ]
+        };
+
+        // 配置选项
+        const demoConfig = {
+            productInfo: {
+                title: '🎯 产品基本信息',
+                fields: {
+                    productName: '产品名称',
+                    productCode: '产品编号',
+                    price: '年缴保费',
+                    coverage: '基本保额',
+                    period: '保障期限'
+                },
+                className: 'product-section'
+            },
+            applicantInfo: {
+                title: '👤 投保人信息',
+                fields: {
+                    name: '姓名',
+                    idCard: '身份证号',
+                    phone: '联系电话',
+                    email: '电子邮箱',
+                    address: '联系地址'
+                },
+                className: 'detail-section'
+            },
+            planInfo: {
+                title: '💎 保障计划选择',
+                className: 'plan-section'
+            },
+            navigation: {
+                items: [
+                    { title: '产品信息', target: '.product-section' },
+                    { title: '投保详情', target: '.detail-section' },
+                    { title: '保障计划', target: '.plan-section' }
+                ],
+                monitorScroll: true
+            }
+        };
+
+        // 初始化演示
+        window.initDemo = function() {
+            if (manager) {
+                manager.destroy();
+            }
+
+            manager = new OrderDetailManager('#demo-container');
+            manager.init(demoData, demoConfig);
+            
+            showMessage('✅ 演示已初始化完成！');
+        };
+
+        // 显示产品信息
+        window.showProductInfo = function() {
+            if (!manager) {
+                showMessage('❌ 请先初始化演示');
+                return;
+            }
+
+            const productDisplay = new InfoDisplay({
+                container: '#demo-container',
+                data: demoData.product,
+                config: {
+                    title: '🎯 单独的产品信息展示',
+                    fields: {
+                        productName: '产品全称',
+                        price: '费用标准',
+                        coverage: '保障额度'
+                    }
+                },
+                type: 'product'
+            });
+
+            productDisplay.init();
+            showMessage('✅ 产品信息组件已添加');
+        };
+
+        // 显示导航
+        window.showNavigation = function() {
+            const nav = new Navigation({
+                container: 'body',
+                items: [
+                    { title: '首页', target: '#demo-container' },
+                    { title: '产品', target: '.product-section' },
+                    { title: '详情', target: '.detail-section' }
+                ],
+                onItemClick: (index, target) => {
+                    showMessage(`🧭 点击了导航项 ${index}: ${target}`);
+                }
+            });
+
+            nav.init();
+            showMessage('✅ 导航组件已初始化');
+        };
+
+        // 模态框演示
+        window.showModalDemo = function() {
+            Modal.confirm({
+                title: '🎉 重构版模态框',
+                content: '<p>这是使用新架构的模态框组件</p><p>支持：</p><ul><li>✅ 自定义按钮</li><li>✅ 灵活配置</li><li>✅ 优雅动画</li></ul>',
+                onConfirm: () => {
+                    showMessage('✅ 用户确认操作');
+                },
+                onCancel: () => {
+                    showMessage('❌ 用户取消操作');
+                }
+            });
+        };
+
+        // 文件上传演示
+        window.showFileUpload = function() {
+            const uploadHtml = createFileUploadInput({
+                label: '📁 上传身份证照片',
+                key: 'idCardPhoto',
+                className: 'demo-upload',
+                options: {
+                    accept: 'image/*',
+                    uploadNum: 1,
+                    placeholder: '请选择图片文件'
+                }
+            });
+
+            const uploadSection = document.createElement('div');
+            uploadSection.className = 'section';
+            uploadSection.innerHTML = `
+                <h3>📤 文件上传演示</h3>
+                ${uploadHtml}
+                <div id="upload-preview"></div>
+            `;
+
+            document.getElementById('demo-container').appendChild(uploadSection);
+
+            // 绑定文件处理事件
+            uploadSection.querySelector('input[type="file"]').addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    try {
+                        const base64 = await fileToBase64(file);
+                        const preview = uploadSection.querySelector('#upload-preview');
+                        preview.innerHTML = `
+                            <p>✅ 文件转换成功！</p>
+                            <img src="${base64}" class="previewImg" alt="预览图">
+                            <p>文件名: ${file.name}</p>
+                            <p>文件大小: ${(file.size/1024).toFixed(2)} KB</p>
+                        `;
+                        showMessage('✅ 文件上传处理完成');
+                    } catch (error) {
+                        showMessage(`❌ 文件处理失败: ${error.message}`);
+                    }
+                }
+            });
+
+            showMessage('✅ 文件上传组件已添加');
+        };
+
+        // 显示消息
+        function showMessage(message) {
+            const msgEl = document.createElement('div');
+            msgEl.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #52c41a;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 4px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                z-index: 1001;
+                animation: slideIn 0.3s ease;
+            `;
+            msgEl.innerHTML = message;
+            
+            document.body.appendChild(msgEl);
+            
+            setTimeout(() => {
+                msgEl.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(msgEl);
+                }, 300);
+            }, 3000);
+        }
+
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 页面加载完成后提示
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                showMessage('👋 欢迎查看重构版演示！点击"初始化演示"开始体验。');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

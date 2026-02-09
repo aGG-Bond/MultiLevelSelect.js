@@ -1,48 +1,57 @@
 {
-  "name": "@aggbond/multi-level-select",
+  "name": "multi-level-select",
   "version": "1.0.0",
-  "publishConfig": {
-    "provenance": false,
-    "access": "public"
-  },
-  "description": "A lightweight, customizable JavaScript plugin for implementing multi-level cascading selection in web applications.",
-  "main": "dist/MultiLevelSelect.cjs.min.js",
+  "description": "多级选择组件 - 支持TypeScript的现代化版本",
+  "main": "dist/MultiLevelSelect.js",
   "module": "dist/MultiLevelSelect.esm.js",
-  "type": "module",
+  "types": "dist/types/MultiLevelSelect.d.ts",
+  "browser": "dist/MultiLevelSelect.min.js",
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && npm run build:types",
+    "build:types": "tsc --emitDeclarationOnly",
     "dev": "rollup -c -w",
-    "prepublishOnly": "npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aGG-Bond/multi-level-select.git"
+    "watch:types": "tsc --watch --emitDeclarationOnly",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs": "echo \"生成文档\"",
+    "lint": "eslint src/**/*.ts src/**/*.js",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
-    "multi-level",
-    "cascading",
     "select",
-    "dropdown",
-    "hierarchical",
+    "multi-level",
+    "component",
+    "ui",
+    "typescript",
     "javascript",
-    "plugin",
-    "mobile-friendly"
+    "modular"
   ],
-  "author": "aGG-Bond",
+  "author": "Developer",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/aGG-Bond/multi-level-select/issues"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/multi-level-select.git"
   },
-  "homepage": "https://github.com/aGG-Bond/multi-level-select#readme",
+  "bugs": {
+    "url": "https://github.com/username/multi-level-select/issues"
+  },
+  "homepage": "https://github.com/username/multi-level-select#readme",
+  "directories": {
+    "doc": "docs",
+    "example": "demo",
+    "lib": "src"
+  },
   "files": [
-    "dist",
-    "src",
-    "README.md",
-    "LICENSE"
+    "dist/",
+    "src/",
+    "docs/",
+    "README.md"
   ],
   "devDependencies": {
-    "rollup": "^3.20.0",
+    "typescript": "^5.0.0",
+    "rollup-plugin-typescript2": "^0.36.0",
     "@rollup/plugin-terser": "^0.4.0",
-    "@rollup/plugin-replace": "^5.0.0"
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0"
   }
 }

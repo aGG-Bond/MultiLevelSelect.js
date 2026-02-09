@@ -1,130 +1,246 @@
-# MultiLevelSelect.js
+# Multi Level Select 多级选择组件
 
-MultiLevelSelect.js 是一个轻量级、可定制的 JavaScript 插件，用于在网页应用中实现多级联动选择。该插件支持层级数据导航、搜索功能以及动态内容渲染，具有良好的移动端适配性和用户体验。
+## 🚀 现代化版本说明
 
-## 特性
+这是一个支持**TypeScript**的现代化多级选择组件，具有以下特性：
 
-- **多级导航** - 允许用户在层级数据中逐级导航，轻松找到目标选项
-- **实时搜索** - 支持对所有层级数据进行搜索和过滤，快速定位目标选项
-- **移动端友好** - 响应式设计，适配触控设备，提供流畅的移动端体验
-- **自定义样式** - 用户可以自定义插件的外观样式，满足不同应用需求
-- **类目导航** - 提供标签页形式的类目切换，更直观地进行层级数据选择
-- **选择状态记忆** - 保存用户的选择状态，方便用户在多次操作之间恢复之前的选择
+- ✅ **TypeScript支持** - 完整的类型定义和类型安全
+- ✅ **高可复用性** - 组件职责分明，可在不同项目中复用
+- ✅ **易维护性** - 清晰的目录结构和代码组织
+- ✅ **可扩展性** - 支持自定义配置和样式
+- ✅ **向后兼容** - 保留原有API，平滑升级
 
-## 安装
+## 📁 目录结构
 
-### npm
+```
+src/
+├── MultiLevelSelect.ts     # TypeScript核心源码
+├── types/                  # TypeScript类型定义
+│   └── index.ts           # 完整类型导出
+├── utils/                 # 工具函数
+│   └── tsUtils.ts         # TypeScript工具函数
+├── components/            # UI组件（重构版本）
+│   ├── BaseComponent.js   
+│   ├── InfoDisplay.js     
+│   ├── Navigation.js      
+│   ├── Modal.js           
+│   └── index.js           
+├── config/                # 配置文件
+│   └── styles.js         
+├── constants/             # 常量定义
+│   └── index.js          
+└── orderDetailModule.js   # 传统版本（向后兼容）
+
+dist/                      # 构建输出目录
+├── MultiLevelSelect.js           # UMD格式
+├── MultiLevelSelect.esm.js       # ES模块格式
+├── MultiLevelSelect.min.js       # 压缩版本
+└── types/                        # TypeScript声明文件
+    └── MultiLevelSelect.d.ts
+
+docs/                      # 文档目录
+demo/                      # 示例目录
+├── index.html            # 传统版本演示
+├── refactored-demo.html  # 重构版本演示
+└── ts-demo.html          # TypeScript版本演示
+```
+
+## 📖 快速开始
+
+### 1. 安装和构建
 
 ```bash
-npm install multi-level-select
-```
-
-### CDN
-
-```html
-<script type="module">
-  import { MultiLevelSelect } from 'https://cdn.jsdelivr.net/npm/multi-level-select/+esm';
-</script>
-```
-
-## 使用方法
-
-### 基本示例
-
-```javascript
-// 导入插件模块
-import { MultiLevelSelect } from 'multi-level-select';
-
-// 实例化插件
-const selector = new MultiLevelSelect({
-  data: yourHierarchicalData,         // 必填(require)：层级数据数组
-  containerId: 'your-container-id',   // 必填(require)：挂载容器的 DOM 元素 ID
-  onSelectComplete: (selectedItems) => {
-    console.log('选择完成:', selectedItems);
-  },
-  options: {
-    title: '选择项目',               // 弹窗标题（默认值为"默认标题"）
-    isBGFixing: true                   // 弹窗打开时固定背景
-  }
-});
-
-// 打开选择弹窗
-selector.openPopup();
-// 打开选中弹窗保留选中数据
-selector.openPopup(jobId);	// jobId 为选中数据的value,非必填
-```
-
-### 数据结构
-
-输入数据应按照以下格式构建：
-
-```javascript
-const data = [
-  {
-    id: "id1",
-    value: "1",
-    label: "一级选项",
-    children: [
-      {
-        id: "id1-1",
-        value: "1-1",
-        label: "二级选项",
-        children: [
-          // 继续定义后续级别...
-        ]
-      }
-    ]
-  }
-];
-```
-
-## 构建
-
-如果你想自己构建此库：
-
-```bash
-# 克隆仓库
-git clone https://github.com/your-username/multi-level-select.git
+# 克隆项目
+git clone https://github.com/username/multi-level-select.git
 cd multi-level-select
 
 # 安装依赖
 npm install
 
-# 构建生产版本
+# 构建项目（包含TypeScript编译）
 npm run build
 
-# 构建后文件将在 dist/ 目录下生成
+# 开发模式（监听TypeScript变化）
+npm run dev
+npm run watch:types
+
+# 类型检查
+npm run type-check
 ```
 
-或者直接双击 `build.bat` 运行构建（仅限Windows系统）。
+### 2. TypeScript使用方式
 
-## API 参考
+```typescript
+import MultiLevelSelect, { SelectOption, Config } from './dist/MultiLevelSelect.esm.js';
 
-### 构造函数
+// 定义类型安全的数据
+const data: SelectOption[] = [
+  {
+    id: '1',
+    name: '前端开发',
+    children: [
+      {
+        id: '1-1',
+        name: 'JavaScript框架',
+        children: [
+          { id: '1-1-1', name: 'Vue.js' },
+          { id: '1-1-2', name: 'React' },
+          { id: '1-1-3', name: 'Angular' }
+        ]
+      }
+    ]
+  }
+];
+
+// 类型安全的配置
+const config: Config = {
+  title: '技术栈选择',
+  enableSearch: true,
+  fixedHeader: true,
+  onSelectComplete: (selectedItems: SelectOption[]) => {
+    console.log('选择完成:', selectedItems);
+  }
+};
+
+// 创建实例（获得完整的类型支持）
+const selector = new MultiLevelSelect(data, config);
+selector.openPopup();
+```
+
+### 3. JavaScript兼容使用
 
 ```javascript
-new MultiLevelSelect({
-  data: Array,               // 必填：层级数据数组
-  containerId: String,       // 必填：挂载 DOM 元素的 ID
-  onSelectComplete: Function, // 必填：选择完成后的回调函数
-  options: {
-    title: String,         // 可选：弹窗标题（默认："默认标题"）
-    isBGFixing: Boolean    // 可选：弹窗打开时是否固定背景（默认：true）
-  }
+// 仍然支持传统的JavaScript使用方式
+import MultiLevelSelect from './dist/MultiLevelSelect.esm.js';
+
+const selector = new MultiLevelSelect(data, {
+  title: '选择分类',
+  enableSearch: true
 });
 ```
 
-### 主要方法
+## 🔧 核心特性
 
-- **openPopup()** - 打开选择弹窗。如果需要，可以传入 jobId 以预选特定项。
-- **closePopup(time = 0)** - 关闭选择弹窗，可设置延时（单位：毫秒）。
-- **resetData()** - 重置选择状态，返回初始视图。
-- **updateCompleteData(jobId)** - 根据指定项的 ID 更新选择数据。
+### TypeScript优势
+- **类型安全**: 编译时捕获错误，减少运行时问题
+- **智能提示**: IDE自动补全和参数提示
+- **重构支持**: 安全的代码重构和重命名
+- **文档生成**: 自动生成类型声明文件
 
-## 浏览器兼容性
+### 组件化架构
+- **BaseComponent**: 所有组件的基础类
+- **InfoDisplay**: 通用信息展示组件
+- **Navigation**: 智能导航组件
+- **Modal**: 灵活的模态框组件
 
-支持所有主流现代浏览器，要求支持 ES6。
+### 工具函数库
+- **TypeScript工具**: 类型安全的工具函数
+- **DOM操作**: 封装常用的DOM操作
+- **文件处理**: 文件上传和base64转换
+- **缓存管理**: 统一的sessionStorage操作
 
-## License
+## 🎨 类型定义
 
-MIT
+### 完整的类型支持
+
+```typescript
+// 基础选项类型
+interface SelectOption {
+  id: string | number;
+  name: string;
+  children?: SelectOption[];
+  [key: string]: any;
+}
+
+// 配置类型
+interface Config {
+  title?: string;
+  fixedHeader?: boolean;
+  enableSearch?: boolean;
+  onSelectComplete?: (selectedItems: SelectOption[]) => void;
+  jobId?: string | number;
+  [key: string]: any;
+}
+
+// 搜索状态类型
+interface SearchState {
+  term: string;
+  results: SelectOption[];
+  isSearching: boolean;
+}
+```
+
+## 📚 详细文档
+
+查看以下文档获取更多信息：
+
+- [使用指南](./docs/usage-example.md) - 完整的API文档和使用示例
+- [TypeScript指南](./docs/typescript-guide.md) - TypeScript特性和最佳实践
+- [重构版本说明](./docs/refactored-version.md) - 组件化架构详解
+
+## 🔧 开发工具
+
+```bash
+# 代码构建（含类型声明）
+npm run build
+
+# 开发监听
+npm run dev
+
+# TypeScript监听
+npm run watch:types
+
+# 类型检查
+npm run type-check
+
+# 代码检查
+npm run lint
+
+# 生成文档
+npm run docs
+```
+
+## 🤝 贡献指南
+
+欢迎提交Issue和Pull Request！
+
+### TypeScript开发流程
+1. Fork项目
+2. 创建feature分支
+3. 使用TypeScript编写代码
+4. 运行类型检查：`npm run type-check`
+5. 构建测试：`npm run build`
+6. 提交PR
+
+## 📄 许可证
+
+MIT License - 详见 [LICENSE](./LICENSE) 文件
+
+## 💡 最佳实践
+
+### TypeScript使用建议
+```typescript
+// ✅ 推荐：使用明确的类型
+const config: Config = {
+  title: '选择器',
+  enableSearch: true
+};
+
+// ✅ 推荐：利用类型推断
+const data = [
+  { id: '1', name: '选项1' } satisfies SelectOption[]
+];
+
+// ✅ 推荐：类型守卫
+if (isSelectOptionArray(response.data)) {
+  // TypeScript知道这里data是SelectOption[]类型
+}
+```
+
+### 性能优化
+- 合理使用泛型提高代码复用性
+- 利用TypeScript的条件类型优化API设计
+- 使用const断言保护字面量类型
+
+---
+**注意**: 此版本完全向后兼容旧版API，同时提供现代化的TypeScript支持。
